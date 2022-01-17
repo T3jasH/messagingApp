@@ -30,8 +30,8 @@ jobs:
         run: |
             docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
         name: Docker login
-      - run: | 
-            cd client
+      - run:
+            cd /client
             docker build -f prod.dockerfile . -t tejashegde/messaging_app_client
             docker push tejashegde/messaging_app_client
         name: Docker build and push 
