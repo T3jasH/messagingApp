@@ -66,12 +66,10 @@ jobs:
         with:
             host: ec2-3-84-86-15.compute-1.amazonaws.com
             username: ubuntu  
-            key: ${{ secrets.KEY }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
             port: 22
             script_stop: true
-            script: |
-              cat ${{ secrets.SSH_PRIVATE_KEY }} > private_key  
-              ssh -i private_key 
+            script: | 
               cd messagingApp/ 
               git pull origin main  
               docker-compose -f docker-compose.prof.yml up -d 
