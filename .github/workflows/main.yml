@@ -72,6 +72,6 @@ jobs:
             script: | 
               cd messagingApp/ 
               git pull origin main  
-              docker-compose -f docker-compose.prof.yml up -d 
+              docker-compose -f docker-compose.prod.yml up -d 
               exit 
-
+              
