@@ -63,7 +63,7 @@ jobs:
     steps:
       - 
         run: |
-            cat {{secrets.SSH_PRIVATE_KEY}} > private_key   
+            cat ${{ secrets.SSH_PRIVATE_KEY }} > private_key   
             ssh -i private_key ubuntu@ec2-3-84-86-15.compute-1.amazonaws.com
             cd messagingApp/ 
             git pull origin main  
