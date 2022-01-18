@@ -56,15 +56,16 @@ jobs:
         name: Docker build and push
   compose_up: 
     name: docker-compose up
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: 
       - build_api
       - build_client
     steps:
-      - uses: actions/checkout@v2
-        with:
-          clean: false
-        name: Checkout code
       - 
-        run: |
-            docker-compose -f docker-compose.prod.yml up
+        run: | 
+            ssh -i {{secrets.SSH_PRIVATE_KEY}} ubuntu@ec2-3-84-86-15.compute-1.amazonaws.com
+            cd messagingApp/ 
+            git pull origin main  
+            docker-compose -f docker-compose.prof.yml up -d 
+            exit 
+            
