@@ -62,8 +62,9 @@ jobs:
       - build_client
     steps:
       - 
-        run: | 
-            ssh -i {{secrets.SSH_PRIVATE_KEY}} ubuntu@ec2-3-84-86-15.compute-1.amazonaws.com
+        run: |
+            cat {{secrets.SSH_PRIVATE_KEY}} > private_key   
+            ssh -i private_key ubuntu@ec2-3-84-86-15.compute-1.amazonaws.com
             cd messagingApp/ 
             git pull origin main  
             docker-compose -f docker-compose.prof.yml up -d 
