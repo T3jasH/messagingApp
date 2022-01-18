@@ -68,3 +68,4 @@ jobs:
             git pull origin main  
             docker-compose -f docker-compose.prof.yml up -d 
             exit 
+            
