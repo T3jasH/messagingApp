@@ -32,7 +32,7 @@ jobs:
         name: Docker login
       - run: |
             cd client 
-            docker build -f prod.dockerfile ./client -t tejashegde/messaging_app_client
+            docker build -f prod.dockerfile . -t tejashegde/messaging_app_client
             docker push tejashegde/messaging_app_client
         name: Docker build and push 
   build_api:
