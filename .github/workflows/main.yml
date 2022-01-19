@@ -52,6 +52,6 @@ jobs:
             script: | 
               cd messagingApp/ 
               git pull origin main  
-              docker pull tejashegde/messaging_app_client
+              docker pull tejashegde/messaging_app_client:latest
               docker-compose -f docker-compose.prod.yml up -d --build 
               exit 
