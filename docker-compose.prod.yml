@@ -10,11 +10,15 @@ services:
     depends_on:
       - api
   api:
-    image: tejashegde/messaging_app_api:latest
+    build: 
+      context: ./api
+      dockerfile: prod.dockerfile
     ports:
       - 5000:5000
     container_name: messagingAppApi
     restart: unless-stopped
+    volumes:
+      - ~/profile:/profile 
     depends_on:
       - db
       - cache
@@ -25,10 +29,11 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: messagingApp
+      POSTGRES_NAME: messagingApp
     ports:
       - 5432:5432
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ~/postgres-data:/var/lib/postgresql/data
       - ./postgres-scripts/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
     container_name: messagingAppDb
     logging: 
@@ -40,7 +45,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - ./redis-data:/var/lib/redis
+      - ~/redis-data:/var/lib/redis
       - ./redis-conf/redis.conf:/usr/local/etc/redis/redis.conf
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 networks:
