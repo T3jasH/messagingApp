@@ -35,30 +35,10 @@ jobs:
             docker build -f prod.dockerfile . -t tejashegde/messaging_app_client
             docker push tejashegde/messaging_app_client
         name: Docker build and push 
-  build_api:
-    name: Build api 
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2 
-        name: Checkout code
-      - 
-        env: 
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-        name: Docker login
-      - 
-        run: |
-              cd api 
-              docker build -f prod.dockerfile . -t tejashegde/messaging_app_api
-              docker push tejashegde/messaging_app_api
-        name: Docker build and push
   compose_up: 
     name: docker-compose up
     runs-on: ubuntu-latest
-    needs: 
-      - build_api
+    needs:
       - build_client
     steps:
       - 
@@ -72,6 +52,6 @@ jobs:
             script: | 
               cd messagingApp/ 
               git pull origin main  
-              docker-compose -f docker-compose.prod.yml up -d 
+              docker pull tejashegde/messaging_app_client
+              docker-compose -f docker-compose.prod.yml up -d --build 
               exit 
-            
