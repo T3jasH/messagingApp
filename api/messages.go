@@ -16,8 +16,12 @@ var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {retur
 
 var channelMap = make(map[uint] []receiver) // ChannelID to receivers 
 var broadcast = make(chan StreamData )
+
 // For notification to users (like when new channel is created)
 var userMap = make(map[uint] *websocket.Conn) // UserID to wewbsocket connection
+
+// Maps user ID to IDs of all the channels that user is a part of
+var userChannelsMap = make(map[uint] []uint)
 
 type receiver struct{
 	UserId uint
@@ -33,19 +37,27 @@ func (app *App) handleConnection(c *gin.Context) {
 	
 	var channels []Channel
 	userId := c.GetUint("userId")
+	// Get channels user is part of
 	err = app.Db.Model(&User{ID: userId}).Select("id").Association("Channels").Find(&channels)
 	if err != nil{
 		app.logger(err)
 	}
 	for _, channel := range channels{
+		// Make user ID and ws part of each channel
 		channelMap[channel.ID] = append(channelMap[channel.ID], receiver{UserId: userId, Connection: ws})
-	} 
+		userChannelsMap[userId] = append(userChannelsMap[userId], channel.ID)
+	}
 	userMap[userId] = ws
+
+	app.updateStatus(userId, "online")
+
 	log.Printf("New connection %d\n", userId)
 	ws.SetCloseHandler(func(code int, text string) error {
 		log.Printf("Received close message: %d %s\n", code, text)
 		// Delete ws from user id to connection mapping
 		delete(userMap, userId)
+		// Delete array from user contacts map
+		delete(userChannelsMap, userId)
 		for _, channel := range channels{
 			var idx int
 			// Delete current connection from array corresponding to channel
@@ -62,13 +74,12 @@ func (app *App) handleConnection(c *gin.Context) {
 				continue
 			}
 			channelMap[channel.ID][idx] = channelMap[channel.ID][n-1]
-			channelMap[channel.ID] = channelMap[channel.ID][0 : n-1]
-			
+			channelMap[channel.ID] = channelMap[channel.ID][0 : n-1]	
 		} 
+		app.goingOffline(userId)
 		return ws.Close()
 	})
-
-	go app.listenForMessages(ws, userId)
+	app.listenForMessages(ws, userId)
 } 
 
 func (app *App) listenForMessages(ws *websocket.Conn, userId uint){
@@ -93,6 +104,14 @@ func (app *App) listenForMessages(ws *websocket.Conn, userId uint){
 			}
 			continue
 		}
+
+		if streamData.Type == "USR_STAT"{
+			streamData.UserStatus.UserId = userId // To make sure this is correct userId (streamData is send by client, can contain false data)
+			broadcast <- streamData
+			continue
+		}
+
+		// MSG
 		message := streamData.Message
 		message.SenderId = userId
 		message.Connection = ws
@@ -149,7 +168,6 @@ func (app *App) listenForMessages(ws *websocket.Conn, userId uint){
 
 func (app *App) SendData(){
 	log.Println("Listening")
-	// Type = MSG
 	// Runs for all connections
 	for {
 		streamData, ok := <-broadcast
@@ -161,7 +179,9 @@ func (app *App) SendData(){
 			app.sendAcks(streamData)
 		case "MSG":
 			app.sendMessages(streamData)
-		}
+		case "USR_STAT":
+			app.sendStatusUpdate(streamData)
+		}		
 	}
 }
 
@@ -187,6 +207,16 @@ func (app *App) sendAcks(streamData StreamData) {
 		err := receiver.Connection.WriteJSON(streamData)
 		if err != nil{
 			app.logger(err)
+		}
+	}
+}
+
+func (app *App) sendStatusUpdate(streamData StreamData){
+	channelId := streamData.UserStatus.ChannelId
+	userId := streamData.UserStatus.UserId
+	for _, receiver :=  range channelMap[channelId]{
+		if receiver.UserId != userId{
+			receiver.Connection.WriteJSON(streamData)
 		}
 	}
 }

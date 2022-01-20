@@ -124,12 +124,11 @@ class Register {
         if (status === 201) {
             this.setMessage(true, resp.message)
         } else {
-            console.log(respBody)
             this.setRegisterUser(respBody)
             if (status === 400) {
                 this.setMessage(false, resp.message)
             } else {
-                this.setMessage(false, "")
+                this.setMessage(false, "Invalid data")
             }
         }
     }
