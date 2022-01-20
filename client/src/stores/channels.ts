@@ -4,9 +4,11 @@ import {
     deleteChannel,
     getChannel,
     getChannels,
+    getUserStatus,
     search,
 } from "../services/channels"
 import { getProfilePic } from "../services/user"
+import { Status } from "./messages"
 import { IUser, User } from "./user"
 
 export interface Message {
@@ -309,5 +311,38 @@ export class Channels {
         } else {
             console.log(res)
         }
+    }
+
+    @action
+    setUserStatus = async (
+        userId: number,
+        channelId: number,
+        stat: Status | null = null
+    ) => {
+        const channelIdx = this.channelUsers.findIndex(
+            (channel) => channel.channelId === channelId
+        )
+        // Already received status
+        if (stat) {
+            runInAction(() => {
+                if (channelIdx !== -1) {
+                    this.channelUsers[channelIdx].user = {
+                        ...this.channelUsers[channelIdx].user,
+                        status: stat,
+                    }
+                }
+            })
+            return
+        }
+        const json = await getUserStatus(userId)
+        const status = json.data.status
+        runInAction(() => {
+            if (channelIdx !== -1) {
+                this.channelUsers[channelIdx].user = {
+                    ...this.channelUsers[channelIdx].user,
+                    status,
+                }
+            }
+        })
     }
 }

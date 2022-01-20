@@ -68,11 +68,22 @@ const Messages = () => {
         newChannels,
         newChannelUsers,
         toggleChannelProfile,
+        setUserStatus,
     } = useRootStore().channels
 
     useEffect(() => {
         receiveMessages()
     }, [receiveMessages])
+
+    useEffect(() => {
+        if (currentChannelId > 0) {
+            setUserStatus(
+                channelUsers[currentChannelIndex].user.id,
+                currentChannelId
+            )
+        }
+        // eslint-disable-next-line
+    }, [currentChannelId])
 
     if (currentChannelId === 0 || currentChannelIndex === -1) {
         return (
@@ -100,6 +111,13 @@ const Messages = () => {
                             : newChannelUsers.find(
                                   (user) => user.channelId === currentChannelId
                               )?.user.name}
+                    </p>
+                    <p>
+                        {searchContacts
+                            ? channelUsers.find(
+                                  (user) => user.channelId === currentChannelId
+                              )?.user?.status
+                            : null}
                     </p>
                 </div>
                 <div>

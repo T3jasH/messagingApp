@@ -12,6 +12,7 @@ enum AckTypes {
 enum StreamTypes {
     AKC = "ACK",
     MSG = "MSG",
+    USR_STAT = "USR_STAT",
 }
 
 interface Acknowledge {
@@ -23,10 +24,23 @@ interface Acknowledge {
     ackType: AckTypes
 }
 
+export enum Status {
+    ONLINE = "online",
+    OFFLINE = "offline",
+    TYPING = "typing",
+}
+
+interface UserStatus {
+    status: Status
+    userId: number
+    channelId: number
+}
+
 interface StreamData {
     type: StreamTypes
     message: Message | null
     acknowledge: Acknowledge | null
+    userStatus: UserStatus | null
 }
 
 export class Messages {
@@ -68,6 +82,15 @@ export class Messages {
             const streamData: StreamData = JSON.parse(ev.data)
             if (streamData.acknowledge && streamData.type === StreamTypes.AKC) {
                 this.updateMessage(streamData.acknowledge)
+            } else if (
+                streamData.userStatus &&
+                streamData.type === StreamTypes.USR_STAT
+            ) {
+                this.channels.setUserStatus(
+                    streamData.userStatus.userId,
+                    streamData.userStatus.channelId,
+                    streamData.userStatus.status
+                )
             } else if (streamData.message) {
                 if (streamData.message.isNewChannel) {
                     this.channels.getChannelUser(streamData.message.channelId)
@@ -93,6 +116,28 @@ export class Messages {
     @action
     setText = (text: string) => {
         this.text = text
+        if (text.trim().length === 0) {
+            // No text, hence not typing
+            this.updateMyStatus(Status.ONLINE)
+        } else if (text.trim().length === 1) {
+            // There is text, hence is typing
+            this.updateMyStatus(Status.TYPING)
+        }
+    }
+
+    @action
+    updateMyStatus(status: Status) {
+        const streamData: StreamData = {
+            type: StreamTypes.USR_STAT,
+            userStatus: {
+                userId: this.user.id,
+                status,
+                channelId: this.channels.currentChannelId,
+            },
+            acknowledge: null,
+            message: null,
+        }
+        this.ws?.send(JSON.stringify(streamData))
     }
 
     reconnect = () => {
@@ -155,6 +200,7 @@ export class Messages {
             type: StreamTypes.MSG,
             message: newMessage,
             acknowledge: null,
+            userStatus: null,
         }
         this.pushMessage(newMessage)
         this.setText("")
@@ -221,6 +267,7 @@ export class Messages {
                 createdAt: message.createdAt,
                 ackType: AckTypes.RECEIVED,
             },
+            userStatus: null,
             message: null,
         }
         this.ws?.send(JSON.stringify(acknowledge))
@@ -251,6 +298,7 @@ export class Messages {
                 ackType: AckTypes.READ,
             },
             message: null,
+            userStatus: null,
         }
         this.ws?.send(JSON.stringify(acknowledge))
         // State needs to be updated, to prevent the same message being ACKed as read multiple times

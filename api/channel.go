@@ -109,7 +109,6 @@ func (app *App) createChannel(c *gin.Context){
 }
 
 // Get all channels user is part of
-
 func (app *App) getUserChannels(c *gin.Context){
 	userId := c.GetUint("userId")
 	var channels []Channel
@@ -138,7 +137,7 @@ type getChannelReponse struct{
 	User User `json:"user"`
 	Messages []Message `json:"messages"`
 }
-
+// Get channel by ID
 func (app *App) getChannel(c *gin.Context){
 	channelId, _ := c.Params.Get("id")
 	var users []User

@@ -47,3 +47,8 @@ export const deleteChannel = async (channelId: number) => {
     const json = await resp.json()
     return json
 }
+
+export const getUserStatus = async (userId: number) => {
+    const res = await get(`/api/user/${userId}/status`)
+    return await res.json()
+}

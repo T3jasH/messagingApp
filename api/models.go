@@ -9,10 +9,10 @@ import (
 type User struct {
 	ID         uint      `gorm:"primaryKey; autoIncrement" json:"id,omitempty"`
 	IsVerified bool      `gorm:"default:0;column:isVerified" json:"isVerified,omitempty"`
-	Name       string    `gorm:"type:VARCHAR(25) NOT NULL" json:"name,omitempty"`
-	Email      string    `gorm:"type:VARCHAR(30) NOT NULL unique" json:"email,omitempty"`
-	Password   string    `gorm:"type:VARCHAR(60) NOT NULL" json:"password,omitempty"`
-	Username   string    `gorm:"type:VARCHAR(20) NOT NULL unique" json:"username,omitempty"`
+	Name       string    `gorm:"type:VARCHAR(40);not null" json:"name,omitempty"`
+	Email      string    `gorm:"type:VARCHAR(50);not null;unique" json:"email,omitempty"`
+	Password   string    `gorm:"type:VARCHAR(60);not null" json:"password,omitempty"`
+	Username   string    `gorm:"type:VARCHAR(25);not null;unique" json:"username,omitempty"`
 	Gender string `gorm:"type:VARCHAR(1);default:'F'" json:"gender"`
 	About string `gorm:"type:VARCHAR(200)" json:"about,omitempty"`
 	ProfilePic string `gorm:"column:profilePic;default:null;type: VARCHAR(50)" json:"profilePic"`
@@ -55,6 +55,7 @@ type Message struct {
 	IsNewChannel bool `gorm:"-" json:"isNewChannel"`
 }
 
+
 type Acknowledge struct{
 	MessageId string `json:"messageId"`
 	FrontendId int `json:"frontendId"`
@@ -64,8 +65,15 @@ type Acknowledge struct{
 	AckType string `json:"ackType"`
 }
 
+type UserStatus struct{
+	Status string `json:"status"` // online offline typing <empty string>
+	UserId uint `json:"userId"`
+	ChannelId uint `json:"channelId"` 
+}
+
 type StreamData struct{
-	Type string `json:"type"` // MSG ACK
+	Type string `json:"type"` // MSG ACK USR_STAT
 	Message Message `json:"message,omitempty"`
 	Acknowledge Acknowledge `json:"acknowledge,omitempty"`
+	UserStatus UserStatus `json:"userStatus,omitempty"`
 }

@@ -128,3 +128,17 @@ func (app *App) uploadProfilePic(c *gin.Context){
 		Data: user,
 	})
 }
+
+func (app *App) getUserStatus(c *gin.Context){
+	userId, _ := c.Params.Get("id")
+	status := app.getStatus(userId)
+	
+	c.JSON(http.StatusOK, Response{
+		Success: true,
+		Data: struct{
+			Status string `json:"status"`
+		}{
+			Status: status,
+		},
+	})
+}
