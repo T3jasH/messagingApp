@@ -6,6 +6,7 @@ import {
     logout,
     uploadImage,
 } from "../services/user"
+import { Status } from "./messages"
 import { Gender } from "./register"
 
 export interface IUser {
@@ -17,6 +18,7 @@ export interface IUser {
     gender: Gender
     profilePic: string | null
     isAuth: boolean | null
+    status: Status | null
 }
 
 export class User implements IUser {
@@ -37,6 +39,7 @@ export class User implements IUser {
     @observable success = false
     @observable userLoading = true
     @observable tempProfilePic = ""
+    @observable status = null
 
     tempProfilePicFile: File | null = null
 

@@ -24,7 +24,7 @@ export const register = async (body: IRegister) => {
         respBody.email.error = ""
         respBody.password.error = ""
         respBody.confirmPassword.error = ""
-        if (status === 201) {
+        if (status === 201 || status === 500) {
             return { resp, respBody, status }
         }
         resp.data?.map((err: any) => {

@@ -41,6 +41,7 @@ func (app *App) InitRoutes() {
 	api.PATCH("/user/about", app.withAuth(app.updateAbout))
 	api.GET("/user/profile", app.withAuth(app.getProfilePic))
 	api.POST("/user/profile", app.withAuth(app.uploadProfilePic))
+	api.GET("/user/:id/status", app.withAuth(app.getUserStatus))
 
 	api.POST("/channel", app.withAuth(app.createChannel))
 	api.GET("/channels", app.withAuth(app.getUserChannels))

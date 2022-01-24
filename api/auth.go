@@ -59,8 +59,14 @@ func (app *App) sendMail(newUser *User) {
 		host            = os.Getenv("MAIL_HOST")
 		port     string = os.Getenv("MAIL_PORT")
 		to              = []string{newUser.Email}
+		clientHost  = ""
 	)
-	msg := fmt.Sprintf("Use this link to verify your account \nhttps://localhost:3000/verify?id=%s", verify.ID)
+	if os.Getenv("GIN_MODE") == "debug" {
+		clientHost = "localhost:3000"
+	}else{
+		clientHost = os.Getenv("MESSAGING_APP_HOST")
+	}
+	msg := fmt.Sprintf("Use this link to verify your account \nhttp://%s/verify?id=%s", clientHost, verify.ID)
 	mailBody := []byte("Subject: Email Verification" +
 		"\r\n" +
 		msg)
@@ -123,7 +129,7 @@ func (app *App) register(c *gin.Context) {
 		app.logger(err)
 		return
 	}
-	//go app.sendMail(&newUser)
+	go app.sendMail(&newUser)
 
 	c.JSON(http.StatusCreated, Response{
 		Success: true,
