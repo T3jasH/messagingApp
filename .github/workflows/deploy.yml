@@ -1,0 +1,25 @@
+name: Deploy 
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  compose_up: 
+    name: docker-compose up
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        uses: appleboy/ssh-action@master
+        with:
+            host: ec2-3-84-86-15.compute-1.amazonaws.com
+            username: ubuntu  
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            port: 22
+            script_stop: true
+            script: | 
+              cd messagingApp/ 
+              git pull origin main  
+              docker pull tejashegde/messaging_app_client:latest
+              docker-compose -f docker-compose.prod.yml up -d --build 
+              exit 
